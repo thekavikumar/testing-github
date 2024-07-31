@@ -53,6 +53,7 @@ jobs:
           done
           echo "</ul></body></html>" >> reports/index.html
             - name: Commit and push reports to master branch
+      - name: Commit and push reports to master branch
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
