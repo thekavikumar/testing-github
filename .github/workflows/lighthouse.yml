@@ -52,16 +52,17 @@ jobs:
             echo "<li><a href=\"$file\">$(basename $file)</a></li>" >> reports/index.html
           done
           echo "</ul></body></html>" >> reports/index.html
-      - name: Commit and push reports to master branch
+            - name: Commit and push reports to master branch
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout master
-          git pull origin master
+          git fetch origin
+          git reset --hard origin/master # Ensure local branch matches remote
           git add reports
-          git commit -m "Add Lighthouse report for commit $COMMIT_SHA"
+          git commit -m "Add Lighthouse report for commit $COMMIT_SHA" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git master
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
@@ -69,3 +70,4 @@ jobs:
         with:
           github_token: ${{ secrets.PAT_TOKEN }}
           publish_dir: reports
+
