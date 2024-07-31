@@ -3,10 +3,10 @@ name: Lighthouse Performance Test
 on:
   push:
     branches:
-      - feat/lighthouse
+      - master
   pull_request:
     branches:
-      - feat/lighthouse
+      - master
 
 jobs:
   lighthouse:
