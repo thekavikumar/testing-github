@@ -1,5 +1,6 @@
 name: Lighthouse Performance Test
-
+permissions:
+  contents: write
 on:
   push:
     branches:
@@ -31,7 +32,6 @@ jobs:
         run: |
           yarn start &
           sleep 15 # Give the server time to start
-
       - name: Install Lighthouse
         run: yarn global add lighthouse
 
@@ -45,7 +45,6 @@ jobs:
         run: |
           COMMIT_SHA=$(git rev-parse --short HEAD)
           mv lighthouse-production.html reports/lighthouse-$COMMIT_SHA.html
-
       - name: Generate index.html
         run: |
           echo "<html><body><h1>Lighthouse Reports</h1><ul>" > reports/index.html
@@ -53,7 +52,6 @@ jobs:
             echo "<li><a href=\"$file\">$(basename $file)</a></li>" >> reports/index.html
           done
           echo "</ul></body></html>" >> reports/index.html
-
       - name: Commit and push reports to master branch
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -65,7 +63,6 @@ jobs:
           git add reports
           git commit -m "Add Lighthouse report for commit $COMMIT_SHA"
           git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git master
-
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
