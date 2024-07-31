@@ -48,7 +48,7 @@ jobs:
       - name: Generate index.html
         run: |
           echo "<html><body><h1>Lighthouse Reports</h1><ul>" > reports/index.html
-          for file in reports/lighthouse-*.html; do
+          for file in ./lighthouse-*.html; do
             echo "<li><a href=\"$file\">$(basename $file)</a></li>" >> reports/index.html
           done
           echo "</ul></body></html>" >> reports/index.html
