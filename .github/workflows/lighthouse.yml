@@ -3,10 +3,10 @@ name: Lighthouse Performance Test
 on:
   push:
     branches:
-      - master
+      - feat/lighthouse
   pull_request:
     branches:
-      - master
+      - feat/lighthouse
 
 jobs:
   lighthouse:
@@ -38,56 +38,31 @@ jobs:
       - name: Run Lighthouse on production build (HTML)
         run: lighthouse http://localhost:3000 --output html --output-path ./lighthouse-production.html --chrome-flags="--headless --no-sandbox --disable-gpu"
 
-      - name: Upload Lighthouse results
+      - name: Create reports directory
+        run: mkdir -p reports
+
+      - name: Move and rename Lighthouse report
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          mv lighthouse-production.html reports/lighthouse-$COMMIT_SHA.html
+
+      - name: Generate index.html
+        run: |
+          echo "<html><body><h1>Lighthouse Reports</h1><ul>" > reports/index.html
+          for file in reports/lighthouse-*.html; do
+            echo "<li><a href=\"$file\">$(basename $file)</a></li>" >> reports/index.html
+          done
+          echo "</ul></body></html>" >> reports/index.html
+
+      - name: Upload reports directory
         uses: actions/upload-artifact@v2
         with:
-          name: lighthouse-results
-          path: lighthouse-production.html
+          name: reports
+          path: reports
 
-      - name: Set up Git
-        run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-
-      - name: Commit and push Lighthouse report to master
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
-          git fetch origin
-          git checkout master
-          REPORT_DIR="lighthouse-reports/${{ github.run_id }}"
-          mkdir -p ${REPORT_DIR}
-          mv lighthouse-production.html ${REPORT_DIR}/index.html
-          git add ${REPORT_DIR}/index.html
-          git commit -m "Add Lighthouse report for run ${{ github.run_id }}"
-          git push origin master
-
-      - name: Update reports index
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
-          INDEX_FILE="lighthouse-reports/index.html"
-          if [ ! -f $INDEX_FILE ]; then
-            echo "<html><body><h1>Lighthouse Reports</h1><ul>" > $INDEX_FILE
-          fi
-          REPORT_DIR="${{ github.run_id }}"
-          echo "<li><a href='${REPORT_DIR}/index.html'>Report ${{ github.run_id }}</a></li>" >> $INDEX_FILE
-          echo "</ul></body></html>" >> $INDEX_FILE
-          git add $INDEX_FILE
-          git commit -m "Update reports index"
-          git push origin master
-
-      - name: Comment with report link
-        uses: actions/github-script@v6
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/feat/lighthouse'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          script: |
-            const { context } = require('@actions/github');
-            const reportUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/lighthouse-reports/${context.runId}/index.html`;
-            const issueComment = `Lighthouse performance report is available here: [View Report](${reportUrl})`;
-            await github.rest.issues.createComment({
-              ...context.repo,
-              issue_number: context.issue.number,
-              body: issueComment,
-            });
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports
