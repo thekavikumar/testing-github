@@ -54,14 +54,18 @@ jobs:
           done
           echo "</ul></body></html>" >> reports/index.html
 
-      - name: Upload reports directory
-        uses: actions/upload-artifact@v2
-        with:
-          name: reports
-          path: reports
+      - name: Commit and push reports to master branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout master
+          git pull origin master
+          git add reports
+          git commit -m "Add Lighthouse report for commit $COMMIT_SHA"
+          git push origin master
 
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/feat/lighthouse'
+        if: github.ref == 'refs/heads/master'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
