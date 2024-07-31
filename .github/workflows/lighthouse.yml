@@ -55,6 +55,8 @@ jobs:
           echo "</ul></body></html>" >> reports/index.html
 
       - name: Commit and push reports to master branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -62,7 +64,7 @@ jobs:
           git pull origin master
           git add reports
           git commit -m "Add Lighthouse report for commit $COMMIT_SHA"
-          git push origin master
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} master
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
