@@ -54,6 +54,8 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+          git fetch origin
+          git checkout master
           REPORT_DIR="lighthouse-reports/${{ github.run_id }}"
           mkdir -p ${REPORT_DIR}
           mv lighthouse-production.html ${REPORT_DIR}/index.html
@@ -65,6 +67,7 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
           INDEX_FILE="lighthouse-reports/index.html"
           if [ ! -f $INDEX_FILE ]; then
             echo "<html><body><h1>Lighthouse Reports</h1><ul>" > $INDEX_FILE
