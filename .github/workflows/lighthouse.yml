@@ -59,13 +59,13 @@ jobs:
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name 'thekavikumar'
+          git config --global user.email 'thekavikumar@users.noreply.github.com'
           git checkout master
           git pull origin master
           git add reports
           git commit -m "Add Lighthouse report for commit $COMMIT_SHA"
-          git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git master
+          git push
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
