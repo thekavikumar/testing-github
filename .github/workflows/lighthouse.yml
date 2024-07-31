@@ -1,6 +1,5 @@
 name: Lighthouse Performance Test
-permissions:
-  contents: write
+
 on:
   push:
     branches:
