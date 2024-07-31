@@ -50,9 +50,10 @@ jobs:
           git config --global user.email 'actions@github.com'
 
       - name: Commit and push Lighthouse report to master
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git fetch origin
-          git checkout master
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
           REPORT_DIR="lighthouse-reports/${{ github.run_id }}"
           mkdir -p ${REPORT_DIR}
           mv lighthouse-production.html ${REPORT_DIR}/index.html
@@ -61,6 +62,8 @@ jobs:
           git push origin master
 
       - name: Update reports index
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           INDEX_FILE="lighthouse-reports/index.html"
           if [ ! -f $INDEX_FILE ]; then
