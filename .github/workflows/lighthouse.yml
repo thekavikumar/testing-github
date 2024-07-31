@@ -49,40 +49,29 @@ jobs:
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
 
-      - name: Create gh-pages branch if it doesn't exist
+      - name: Commit and push Lighthouse report to master
         run: |
           git fetch origin
-          if ! git rev-parse --verify origin/gh-pages; then
-            git checkout --orphan gh-pages
-            git reset --hard
-            git commit --allow-empty -m "Initialize gh-pages branch"
-            git push origin gh-pages
-          fi
-
-      - name: Deploy report to GitHub Pages
-        run: |
-          git clone --branch gh-pages https://github.com/${{ github.repository }} gh-pages
+          git checkout master
           REPORT_DIR="lighthouse-reports/${{ github.run_id }}"
-          mkdir -p gh-pages/${REPORT_DIR}
-          cp lighthouse-production.html gh-pages/${REPORT_DIR}/index.html
-          cd gh-pages
+          mkdir -p ${REPORT_DIR}
+          mv lighthouse-production.html ${REPORT_DIR}/index.html
           git add ${REPORT_DIR}/index.html
-          git commit -m "Deploy Lighthouse report for run ${{ github.run_id }}"
-          git push origin gh-pages
+          git commit -m "Add Lighthouse report for run ${{ github.run_id }}"
+          git push origin master
 
       - name: Update reports index
         run: |
-          cd gh-pages
-          INDEX_FILE="index.html"
+          INDEX_FILE="lighthouse-reports/index.html"
           if [ ! -f $INDEX_FILE ]; then
             echo "<html><body><h1>Lighthouse Reports</h1><ul>" > $INDEX_FILE
           fi
-          REPORT_DIR="lighthouse-reports/${{ github.run_id }}"
+          REPORT_DIR="${{ github.run_id }}"
           echo "<li><a href='${REPORT_DIR}/index.html'>Report ${{ github.run_id }}</a></li>" >> $INDEX_FILE
           echo "</ul></body></html>" >> $INDEX_FILE
           git add $INDEX_FILE
           git commit -m "Update reports index"
-          git push origin gh-pages
+          git push origin master
 
       - name: Comment with report link
         uses: actions/github-script@v6
